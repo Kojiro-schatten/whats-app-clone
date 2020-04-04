@@ -1,29 +1,16 @@
 import React from 'react';
 import ChatsNavbar from './ChatsNavbar';
 import ChatsList from './ChatsList';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  height: 100vh;
+  `;
 
 const ChatsListScreen: React.FC = () => (
-  <div>
+  <Container>
     <ChatsNavbar />
     <ChatsList />
-  </div>
+  </Container>
 );
 export default ChatsListScreen;
-
-// import React from 'react';
-// import ReactDOM from 'react-dom';
-// import './index.css';
-// import App from '../../App';
-// import * as serviceWorker from '../../serviceWorker';
-
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById('root')
-// );
-
-// // If you want your app to work offline and load faster, you can change
-// // unregister() to register() below. Note this comes with some pitfalls.
-// // Learn more about service workers: https://bit.ly/CRA-PWA
-// serviceWorker.unregister();
