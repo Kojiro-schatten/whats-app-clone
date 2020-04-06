@@ -1,8 +1,8 @@
 import React from 'react';
-import { chats } from '../../db';
 import moment from 'moment';
 import { List, ListItem } from '@material-ui/core';
 import styled from 'styled-components';
+import {useState, useMemo} from 'react';
 
 const Container = styled.div`
   height: calc(100% - 56px);
@@ -51,25 +51,60 @@ const MessageDate = styled.div`
   font-size: 13px;
 `;
 
-const ChatsList = () => (
-  <Container>
-    <StyledList>
-      { chats.map((chat) => (
-        <StyledListItem key={chat.id} button>
-          <ChatPicture src={chat.picture} alt="Profile" />
-          <ChatInfo>
-            <ChatName>{chat.name}</ChatName>
-            {chat.lastMessage && (
-              <React.Fragment>
-                <MessageContent>{chat.lastMessage.content}</MessageContent>
-                <MessageDate>{moment(chat.lastMessage.createdAt).format('HH:mm')}</MessageDate>
-              </React.Fragment>
-            )}
-          </ChatInfo>
-        </StyledListItem>
-      )) }
-    </StyledList>
-  </Container>
-);
+const getChatsQuery = `
+  query GetChats {
+    chats {
+      id
+      name
+      picture
+      lastMessage {
+        id
+        content
+        createdAt
+      }
+    }
+  }  
+`
+
+const ChatsList = () => {
+  const [chats, setChats] = useState<any[]>([]);
+  useMemo(async () => {
+    // 特定の条件が満たされたときだけ計算を実行するために使用 - コンポーネントがマウントされたときだけfetch()関数を実行するために使用されます。
+    const body = await fetch(`${process.env.REACT_APP_SERVER_URL}/graphql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: getChatsQuery }),
+    });
+    const {
+      data: { chats },
+    } = await body.json();
+    setChats(chats);
+  }, []);
+
+  return (
+    <Container>
+      <StyledList>
+        {chats.map((chat) => (
+          <StyledListItem key={chat.id} button>
+            <ChatPicture src={chat.picture} alt="Profile" />
+            <ChatInfo>
+              <ChatName>{chat.name}</ChatName>
+              {chat.lastMessage && (
+                <React.Fragment>
+                  <MessageContent>{chat.lastMessage.content}</MessageContent>
+                  <MessageDate>
+                    {moment(chat.lastMessage.createdAt).format('HH:mm')}
+                  </MessageDate>
+                </React.Fragment>
+              )}
+            </ChatInfo>
+          </StyledListItem>
+        ))}
+      </StyledList>
+    </Container>
+  )
+}
 
 export default ChatsList;
