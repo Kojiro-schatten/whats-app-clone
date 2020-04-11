@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import React from 'react';
 import { useCallback } from 'react';
-import { useApolloClient, useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import styled from 'styled-components';
 import ChatNavbar from './ChatNavbar';
 import MessageInput from './MessageInput';
@@ -35,6 +35,16 @@ interface ChatRoomScreenParams {
   history: History;
 }
 
+const addMessageMutation = gql`
+  mutation AddMessage($chatId: ID!, $content: String!) {
+    addMessage(chatId: $chatId, content: $content) {
+      id
+      content
+      createdAt
+    }
+  }
+`;
+
 export interface ChatQueryMessage {
   id: string;
   content: string;
@@ -54,35 +64,42 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
   history,
   chatId,
 }) => {
-  const client = useApolloClient();
   const { data } = useQuery<any>(getChatQuery, {
     variables: { chatId },
   });
   const chat = data?.chat;
+  const [addMessage] = useMutation(addMessageMutation);
 
   const onSendMessage = useCallback(
     (content: string) => {
-      if (!chat) return null;
-
-      const message = {
-        id: (chat.messages.length + 10).toString(),
-        createdAt: new Date(),
-        content,
-        __typename: 'Chat',
-      };
-
-      client.writeQuery({
-        query: getChatQuery,
-        variables: { chatId },
-        data: {
-          chat: {
-            ...chat,
-            messages: chat.messages.concat(message),
+      addMessage({
+        variables: { chatId, content },
+        optimisticResponse: {
+          typename: 'Mutation',
+          addMessage: {
+            __typename: 'Message',
+            id: Math.random().toString(36).substr(2, 9),
+            createdAt: new Date(),
+            content,
           },
         },
-      });
+    update: (client, { data }) => {
+      if (data && data.addMessage) {
+        client.writeQuery({
+          query: getChatQuery,
+          variables: { chatId },
+          data: {
+            chat: {
+              ...chat,
+              messages: chat.messages.concat(data.addMessage),
+            },
+          },
+        });
+      }
     },
-    [chat, chatId, client]
+  });
+},
+    [chat, chatId, addMessage]
   );
 
   if (!chat) return null;
