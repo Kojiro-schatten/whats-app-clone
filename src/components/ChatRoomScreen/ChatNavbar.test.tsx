@@ -25,7 +25,7 @@ describe('ChatNavbar', () => {
         },
       ],
     };
-    
+
     const history = createMemoryHistory();
 
     {
@@ -71,4 +71,4 @@ describe('ChatNavbar', () => {
       await waitFor(() => expect(history.location.pathname).toEqual('/chats'));
     }
   });
-})
+});

@@ -6,7 +6,7 @@ import { History } from 'history';
 
 const Container = styled.div`
   height: 100vh;
-  `;
+`;
 
 interface ChatslistScreenProps {
   history: History;

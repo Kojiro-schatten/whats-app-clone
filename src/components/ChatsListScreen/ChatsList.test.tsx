@@ -1,105 +1,115 @@
 import React from 'react';
-import { cleanup, render, waitFor, fireEvent, screen } from '@testing-library/react';
-import { ApolloProvider } from '@apollo/react-hooks'
-import { createBrowserHistory } from 'history';
-import { mockApolloClient } from '../../test-helpers';
-import ChatsList, { getChatsQuery } from './ChatsList';
+import moment from 'moment';
+import { List, ListItem } from '@material-ui/core';
+import styled from 'styled-components';
+import { useCallback } from 'react';
+import { History } from 'history';
+import { useQuery } from '@apollo/react-hooks';
+import * as queries from '../../graphql/queries';
 
-describe('ChatsList', () => {
-  afterEach(() => {
-    cleanup();
-    delete window.location;
-    window = Object.create(window);
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: '/',
-      },
-      writable: true,
-    });
-  });
+const Container = styled.div`
+  height: calc(100% - 56px);
+  overflow-y: overlay;
+`;
 
-  it('renders fetched chats data', async () => {
-    const client = mockApolloClient([
-      {
-        request: { query: getChatsQuery },
-        result: {
-          data: {
-            chats: [
-              {
-                __typename: 'Chat',
-                id: 1,
-                name: 'Foo Bar',
-                picture: 'https://localhost:4000/picture.jpg',
-                lastMessage: {
-                  __typename: 'Message',
-                  id: 1,
-                  content: 'Hello',
-                  createdAt: new Date('1 Jan 2019 GMT'),
-                },
-              },
-            ],
-          },
-        },
-      },
-    ]);
+const StyledList = styled(List)`
+  padding: 0 !important;
+`;
 
-      const history = createBrowserHistory();
+const StyledListItem = styled(ListItem)`
+  height: 76px;
+  padding: 0 15px;
+  display: flex;
+`;
 
-    {
-      const { container, getByTestId } = render(
-        <ApolloProvider client={client}>
-          <ChatsList history={history} />
-        </ApolloProvider>
-      );
+const ChatPicture = styled.img`
+  height: 50px;
+  width: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+`;
 
-      await waitFor(() => screen.getByTestId('name'));
+const ChatInfo = styled.div`
+  width: calc(100% - 60px);
+  height: 46px;
+  padding: 15px 0;
+  margin-left: 10px;
+  border-bottom: 0.5px solid silver;
+  position: relative;
+`;
 
-      expect(getByTestId('name')).toHaveTextContent('Foo Bar');
-      expect(getByTestId('picture')).toHaveAttribute(
-        'src',
-        'https://localhost:4000/picture.jpg'
-      );
-      expect(getByTestId('content')).toHaveTextContent('Hello');
-      expect(getByTestId('date')).toHaveTextContent('00:00');
-    }
-  });
+const ChatName = styled.div`
+  margin-top: 5px;
+`;
 
-  it('should navigate to the target chat room on chat item click', async () => {
-    const client = mockApolloClient([
-      {
-        request: { query: getChatsQuery },
-        result: {
-          data: {
-            chats: [
-              {
-                __typename: 'Chat',
-                id:1,
-                name:'Foo bar',
-                picture:'https://localhost:4000/picture.jpg',
-                lastMessage: {
-                  __typename: 'Message',
-                  id:1,
-                  content: 'Hello',
-                  createdAt: new Date('1 Jan 2019 GMT'),
-                },
-              },
-            ],
-          },
-        },
-      },
-    ]);
+const MessageContent = styled.div`
+  color: gray;
+  font-size: 15px;
+  margin-top: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+`;
 
-    const history = createBrowserHistory();
+const MessageDate = styled.div`
+  position: absolute;
+  color: gray;
+  top: 20px;
+  right: 0;
+  font-size: 13px;
+`;
 
-    {
-      const { container, getByTestId } = render(
-        <ChatsList history={history} />
-        );
-        await waitFor(() => container);
-        fireEvent.click(getByTestId('chat'));
-        await waitFor(() =>
-        expect(history.location.pathname).toEqual('/chats/1')
-        );
-      }
-    })
-});
+interface ChatsListProps {
+  history: History;
+}
+
+const ChatsList: React.FC<ChatsListProps> = ({ history }) => {
+  const { data } = useQuery<any>(queries.chats);
+
+  const navToChat = useCallback(
+    (chat) => {
+      history.push(`chats/${chat.id}`);
+    },
+    [history]
+  );
+
+  if (data === undefined || data.chats === undefined) {
+    return null;
+  }
+  let chats = data.chats;
+
+  return (
+    <Container>
+      <StyledList>
+        {chats.map((chat: any) => (
+          <StyledListItem
+            key={chat.id}
+            data-testid="chat"
+            button
+            onClick={navToChat.bind(null, chat)}>
+            <ChatPicture
+              data-testid="picture"
+              src={chat.picture}
+              alt="Profile"
+            />
+            <ChatInfo>
+              <ChatName data-testid="name">{chat.name}</ChatName>
+              {chat.lastMessage && (
+                <React.Fragment>
+                  <MessageContent data-testid="content">
+                    {chat.lastMessage.content}
+                  </MessageContent>
+                  <MessageDate data-testid="date">
+                    {moment(chat.lastMessage.createdAt).format('HH:mm')}
+                  </MessageDate>
+                </React.Fragment>
+              )}
+            </ChatInfo>
+          </StyledListItem>
+        ))}
+      </StyledList>
+    </Container>
+  );
+};
+
+export default ChatsList;

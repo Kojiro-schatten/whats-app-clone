@@ -14,4 +14,3 @@ export default new ApolloClient({
   link: httpLink,
   cache: inMemoryCache,
 });
-

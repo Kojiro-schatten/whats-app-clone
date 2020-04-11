@@ -3,7 +3,7 @@ import React from 'react';
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { ChatQueryMessage } from './index'
+import { ChatQueryMessage } from './index';
 
 const Container = styled.div`
   display: block;
@@ -71,7 +71,7 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
   }, [messages.length]);
   return (
     <Container ref={selfRef}>
-      {messages.map((message:any) => (
+      {messages.map((message: any) => (
         <MessageItem data-testid="message-item" key={message.id}>
           <Contents data-testid="message-content">{message.content}</Contents>
           <Timestamp data-testid="message-date">
@@ -80,7 +80,7 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
         </MessageItem>
       ))}
     </Container>
-  )
+  );
 };
 
 export default MessagesList;

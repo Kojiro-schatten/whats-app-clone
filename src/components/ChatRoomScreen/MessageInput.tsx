@@ -55,9 +55,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
   };
 
   const submitMessage = () => {
-    if(!message) return;
+    if (!message) return;
     setMessage('');
-    if(typeof onSendMessage === 'function') {
+    if (typeof onSendMessage === 'function') {
       onSendMessage(message);
     }
   };

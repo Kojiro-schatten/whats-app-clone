@@ -9,7 +9,7 @@ import { ChatQueryResult } from './index';
 
 const Container = styled(Toolbar)`
   padding: 0;
-  display:flex;
+  display: flex;
   flex-direction: row;
   background-color: var(--primary-bg);
   color: var(--primary-text);
@@ -50,7 +50,7 @@ const ChatNavbar: React.FC<ChatNavbarProps> = ({ chat, history }) => {
       <Picture data-testid="chat-picture" src={chat.picture} />
       <Name data-testid="chat-name">{chat.name}</Name>
     </Container>
-  )
-}
+  );
+};
 
 export default ChatNavbar;

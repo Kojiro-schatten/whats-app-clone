@@ -5,7 +5,7 @@ import App from './App';
 import { mockApolloClient } from './test-helpers';
 
 it('renders without crashing', () => {
-  const client = mockApolloClient();
+  const client = mockApolloClient('');
   const div = document.createElement('div');
 
   ReactDOM.render(
@@ -16,14 +16,3 @@ it('renders without crashing', () => {
   );
   ReactDOM.unmountComponentAtNode(div);
 });
-
-
-// import React from 'react';
-// import { render } from '@testing-library/react';
-// import App from './App';
-
-// test('renders learn react link', () => {
-//   const { getByText } = render(<App />);
-//   const linkElement = getByText(/learn react/i);
-//   expect(linkElement).toBeInTheDocument();
-// });
